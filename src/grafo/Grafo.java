@@ -3,6 +3,7 @@ package grafo;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Stack;
 
 
 public class Grafo { 
@@ -13,6 +14,10 @@ public class Grafo {
     public Grafo (HashMap<Integer,nodo> N, HashMap<Integer,Arista> A){
         this.Nodos=N;
         this.Aristas=A;
+    }
+    public Grafo (){
+        this.Nodos = new HashMap<>();
+        this.Aristas = new HashMap<>();
     }
     
     public void setNodos (HashMap<Integer,nodo> a){
@@ -26,6 +31,10 @@ public class Grafo {
     }
     public HashMap<Integer,nodo> getNodos (){
         return this.Nodos;
+    }
+    public void setG (HashMap<Integer,nodo> a, HashMap<Integer,Arista> b){
+        this.Nodos = (HashMap)a;
+        this.Aristas = (HashMap)b;
     }
     
     
@@ -80,6 +89,16 @@ public class Grafo {
         
         for(int i=0;i<NumAristas;i++){
             System.out.println(AristaS.get(i).getidN1()+"--"+AristaS.get(i).getidN2());
+        }
+        System.out.println("");
+        for(int i=0; i<NumNodos;i++){
+            System.out.println(NodoS.get(i).get()+" "+NodoS.get(i).getConectado()+" "+NodoS.get(i).getGrado()+" === "+NodoS.get(i).getX()+" "+NodoS.get(i).getY());
+        }
+        System.out.println("");
+        for(int i=0; i<NumNodos;i++){
+            if(NodoS.get(i).getConectado() == 0){
+                System.out.println(NodoS.get(i).get());
+            }
         }
         System.out.println("=======");
         
@@ -192,6 +211,7 @@ public class Grafo {
             pw.println("graph 666{");
             for(int i=0;i<g.getNodos().size();i++){
                 pw.println(g.getNodos().get(i).get());
+                
             }
             pw.println();
             for(int i=0;i<g.getAristas().size();i++){
@@ -211,16 +231,156 @@ public class Grafo {
         }
     }
     
-
+    
+    public static Grafo BFS (Grafo G){
+        HashMap<Integer,HashMap> Ls = new HashMap(); //  Coleccion de colecciones
+        HashMap<Integer,nodo> Ln1 = new HashMap();   //
+        HashMap<Integer,nodo> Ln2 = new HashMap();   //
+        HashMap<Integer,nodo> V = new HashMap();     //  map Nodos
+        HashMap<Integer,Arista> Edg = new HashMap(); //  map Aristas
+        int numL = 0, cv=0, num =0;
+        
+        G.getNodos().get(0).setF(true);
+        Ln1.put(0,G.getNodos().get(0));
+        Ls.put(numL,(HashMap)Ln1.clone());
+        V.put(cv, G.getNodos().get(0));
+        
+        while(Ln1.isEmpty()==false){
+            Ln2.clear();
+            num = 0;
+            for(int i = 0;i<Ln1.size();i++){
+                for(int j = 0;j<G.getAristas().size();j++){
+                    if(Ln1.get(i).get()==G.getAristas().get(j).getidN1() && G.getNodos().get(G.getAristas().get(j).getidN2()).getF()==false){
+                        G.getNodos().get(G.getAristas().get(j).getidN2()).setF(true);
+                        Ln2.put(num, G.getNodos().get(G.getAristas().get(j).getidN2()));
+                        num++;
+                        Edg.put(cv, G.getAristas().get(j));
+                        cv++;
+                        V.put(cv, G.getNodos().get(G.getAristas().get(j).getidN2()));
+                    }
+                    if(Ln1.get(i).get()==G.getAristas().get(j).getidN2() && G.getNodos().get(G.getAristas().get(j).getidN1()).getF()==false){
+                        G.getNodos().get(G.getAristas().get(j).getidN1()).setF(true);
+                        Ln2.put(num, G.getNodos().get(G.getAristas().get(j).getidN1()));
+                        num++;
+                        Edg.put(cv, G.getAristas().get(j));
+                        cv++;
+                        V.put(cv, G.getNodos().get(G.getAristas().get(j).getidN1()));
+                    }
+                }
+            }
+            numL++;
+            Ln1=(HashMap)Ln2.clone();
+            Ls.put(numL,(HashMap)Ln2.clone());
+        }
+        Grafo A = new Grafo();
+        A.setG(V, Edg);
+        return A;
+    }
+    
+    public static Grafo DFS_I (Grafo G){
+        Grafo A = new Grafo();
+        int z,cA=0;
+        boolean fl;
+        
+        boolean MA[][]=new boolean[G.getNodos().size()][G.getNodos().size()];
+        for (int i = 0; i < G.getAristas().size(); i++) {
+            MA[G.getAristas().get(i).getidN1()][G.getAristas().get(i).getidN2()]=true;
+            MA[G.getAristas().get(i).getidN2()][G.getAristas().get(i).getidN1()]=true;
+        }
+        
+        Stack<Integer>pila = new Stack<>();
+        pila.push(G.getNodos().get(0).get());
+        G.getNodos().get(0).setF(true);
+        A.getNodos().put(cA, new nodo (G.getNodos().get(0)));
+        
+        
+        while(pila.isEmpty()==false){
+            z=pila.peek();
+            fl=false;
+            for (int i = 0; i < G.getNodos().size(); i++) {
+                if(MA[z][i]==true && G.getNodos().get(i).getF()==false){
+                    G.getNodos().get(i).setF(true);
+                    A.getAristas().put(cA, new Arista(z,i));
+                    cA++;
+                    A.getNodos().put(cA,new nodo(G.getNodos().get(i)));
+                    pila.push(i);
+                    fl=true;
+                    i=G.getNodos().size();
+                }
+                if (i==G.getNodos().size()-1 && fl==false) {
+                    pila.pop();
+                }
+            }
+        }
+        
+        for(int i=0;i<A.getAristas().size() ;i++){
+            System.out.println(A.getAristas().get(i).getidN1()+"--"+A.getAristas().get(i).getidN2());
+        }
+        System.out.println("");
+        for(int i=0; i<A.getNodos().size();i++){
+            System.out.println(A.getNodos().get(i).get()+" "+
+                                A.getNodos().get(i).getConectado()+" "+
+                                A.getNodos().get(i).getGrado()
+                                +" === "+A.getNodos().get(i).getX()+" "+A.getNodos().get(i).getY());
+        }
+        System.out.println("");
+        return A;
+    }
+    
+    public static Grafo DFS_R (Grafo G,nodo N0){
+        Grafo A = new Grafo();
+        Grafo B;
+        boolean MA[][]=new boolean[G.getNodos().size()][G.getNodos().size()];
+        for (int i = 0; i < G.getAristas().size(); i++) {
+            MA[G.getAristas().get(i).getidN1()][G.getAristas().get(i).getidN2()]=true;
+            MA[G.getAristas().get(i).getidN2()][G.getAristas().get(i).getidN1()]=true;
+        }
+        G.getNodos().get(N0.get()).setF(true);
+        A.getNodos().put(0, new nodo (G.getNodos().get(N0.get())));
+        for (int i = 0; i < G.getNodos().size(); i++) {
+            if(MA[N0.get()][i]==true && G.getNodos().get(i).getF()==false){
+                B=DFS_R(G,G.getNodos().get(i));
+                int tN = A.getNodos().size();
+                for (int j = 0; j < B.getNodos().size(); j++) {
+                        A.getNodos().put(tN+j, B.getNodos().get(j));
+                }
+                A.getAristas().put(A.getAristas().size(), new Arista(N0.get(),i));
+                tN=A.getAristas().size();
+                if (B.getAristas().isEmpty()!=true) {
+                    for (int j = 0; j < B.getAristas().size(); j++) {
+                        A.getAristas().put(tN+j, B.getAristas().get(j));
+                    }
+                }
+            }
+        }
+        return A;
+    }
+    
     public static void main(String[] args) {
         
-        Grafo G1;
+        //====================================DFS Iterador Funciona chingon 
+        //Grafo G = new Grafo();
+        //G = Erdos(500,7000,0); 
+        //G = DFS_I(G);
+        //imprimir("A_DFS_I 500N", G);
+        //=================================================================
         
-        G1=Barabasi(100, 4, 0);
+        //====================================DFS Recursivo Funciona chingon 
+        //Grafo G = new Grafo();
+        //G = Erdos(500,7000,0); 
+        //G = DFS_R(G,G.getNodos().get(0));
+        //imprimir("A_DFS_R 500N", G);
+        //==================================================================
         
+        //====================================DFS Recursivo Funciona chingon 
+        /*Grafo G = new Grafo();
+        G = Erdos(500,7000,0); 
+        G = BFS(G);
+        imprimir("A_BFS 500N", G);*/
+        //==================================================================
         
-        imprimir("Erdos_30_270", G1);
-        
+        //G1=Erdos(10,10,0);       
+        //imprimir("Erdos_10_20", G1);
         //Erdos("Erdos_30_270",30,270,0);
         //Erdos("Erdos_100_2000",100,2000,0);
         //Erdos("Erdos_500_75000",500,7000,0);

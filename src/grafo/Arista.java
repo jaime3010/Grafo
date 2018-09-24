@@ -26,7 +26,7 @@ public class Arista {
     public void setidN1 (int idNodo){
         this.idN1 = idNodo;
     }
-    public void gsetidN2 (int idNodo){
+    public void setidN2 (int idNodo){
         this.idN2 = idNodo;
     }
     
