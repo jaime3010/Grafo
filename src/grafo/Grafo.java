@@ -12,8 +12,8 @@ public class Grafo {
     private HashMap<Integer,Arista> Aristas;
     
     public Grafo (HashMap<Integer,nodo> N, HashMap<Integer,Arista> A){
-        this.Nodos=N;
-        this.Aristas=A;
+        this.Nodos = (HashMap)N.clone();
+        this.Aristas= (HashMap)A.clone();
     }
     public Grafo (){
         this.Nodos = new HashMap<>();
@@ -87,7 +87,7 @@ public class Grafo {
             }
         }
         
-        for(int i=0;i<NumAristas;i++){
+        /*for(int i=0;i<NumAristas;i++){
             System.out.println(AristaS.get(i).getidN1()+"--"+AristaS.get(i).getidN2());
         }
         System.out.println("");
@@ -100,7 +100,7 @@ public class Grafo {
                 System.out.println(NodoS.get(i).get());
             }
         }
-        System.out.println("=======");
+        System.out.println("=======");*/
         
         Grafo G = new Grafo(NodoS,AristaS);
         return G;
@@ -232,7 +232,7 @@ public class Grafo {
     }
     
     
-    public static Grafo BFS (Grafo G){
+    public static Grafo BFS (Grafo G, nodo nod){
         HashMap<Integer,HashMap> Ls = new HashMap(); //  Coleccion de colecciones
         HashMap<Integer,nodo> Ln1 = new HashMap();   //
         HashMap<Integer,nodo> Ln2 = new HashMap();   //
@@ -240,10 +240,10 @@ public class Grafo {
         HashMap<Integer,Arista> Edg = new HashMap(); //  map Aristas
         int numL = 0, cv=0, num =0;
         
-        G.getNodos().get(0).setF(true);
-        Ln1.put(0,G.getNodos().get(0));
+        G.getNodos().get(nod.get()).setF(true);
+        Ln1.put(0,G.getNodos().get(nod.get()));
         Ls.put(numL,(HashMap)Ln1.clone());
-        V.put(cv, G.getNodos().get(0));
+        V.put(cv, G.getNodos().get(nod.get()));
         
         while(Ln1.isEmpty()==false){
             Ln2.clear();
@@ -277,7 +277,7 @@ public class Grafo {
         return A;
     }
     
-    public static Grafo DFS_I (Grafo G){
+    public static Grafo DFS_I (Grafo G, nodo nod){
         Grafo A = new Grafo();
         int z,cA=0;
         boolean fl;
@@ -289,9 +289,9 @@ public class Grafo {
         }
         
         Stack<Integer>pila = new Stack<>();
-        pila.push(G.getNodos().get(0).get());
-        G.getNodos().get(0).setF(true);
-        A.getNodos().put(cA, new nodo (G.getNodos().get(0)));
+        pila.push(G.getNodos().get(nod.get()).get());
+        G.getNodos().get(nod.get()).setF(true);
+        A.getNodos().put(cA, new nodo (G.getNodos().get(nod.get())));
         
         
         while(pila.isEmpty()==false){
@@ -356,28 +356,40 @@ public class Grafo {
         return A;
     }
     
+    
+    
     public static void main(String[] args) {
         
-        //====================================DFS Iterador Funciona chingon 
-        //Grafo G = new Grafo();
-        //G = Erdos(500,7000,0); 
-        //G = DFS_I(G);
-        //imprimir("A_DFS_I 500N", G);
+        
+        //====================================DFS_I
+        /*Grafo G = new Grafo();
+        G = Geografico(30,.5,0);
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        G = DFS_I(G,G.getNodos().get(0));
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A DFS_I", G);//*/
         //=================================================================
         
-        //====================================DFS Recursivo Funciona chingon 
-        //Grafo G = new Grafo();
-        //G = Erdos(500,7000,0); 
-        //G = DFS_R(G,G.getNodos().get(0));
-        //imprimir("A_DFS_R 500N", G);
+        //====================================DFS_R
+        /*Grafo G = new Grafo();
+        G = Geografico(30,.5,0);
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        G = DFS_R(G,G.getNodos().get(0));
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A DFS_R", G);//*/
         //==================================================================
         
-        //====================================DFS Recursivo Funciona chingon 
+        //====================================BFS  Funciona chingon 
         /*Grafo G = new Grafo();
-        G = Erdos(500,7000,0); 
-        G = BFS(G);
-        imprimir("A_BFS 500N", G);*/
+        G = Geografico(500,.5,0);
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        G = BFS(G,G.getNodos().get(0));
+        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A BSF", G);//*/
         //==================================================================
+        
+        
+        
+        
+     
+        
         
         //G1=Erdos(10,10,0);       
         //imprimir("Erdos_10_20", G1);
