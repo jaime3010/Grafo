@@ -8,7 +8,8 @@ public class nodo {
     private int Grado;
     private double x,y;
     private int conectado;
-    private boolean F; 
+    private boolean F;
+    private double W;
     
     public nodo (){
         this.Grado=0;
@@ -16,6 +17,7 @@ public class nodo {
         this.y =0;
         this.conectado =0;
         this.F=false;
+        this.W = 0;
     }
     
     public nodo (nodo n1){
@@ -25,6 +27,7 @@ public class nodo {
         this.y=n1.getY();
         this.conectado=n1.getConectado();
         this.F = n1.getF();
+        this.W = n1.getW();
     }   
     
     public nodo (int idDado){    
@@ -34,15 +37,17 @@ public class nodo {
         this.y =0;
         this.conectado =0;
         this.F=false;
+        this.W = 0;
     } 
     
-    public nodo (int idDado, int con, int gra, double x1, double y1, boolean g){    
+    public nodo (int idDado, int con, int gra, double x1, double y1, boolean g, double p){    
         this.id = idDado;
         this.conectado = con;
         this.Grado = gra;
-        this.x =x1;
-        this.y =y1;
-        this.F=g;
+        this.x = x1;
+        this.y = y1;
+        this.F = g;
+        this.W = p;
     }
     
     public nodo (int idDado, double x1, double y1){    
@@ -52,6 +57,7 @@ public class nodo {
         this.y =y1;
         this.F=false;
         this.conectado = 0;
+        this.W = 0;
     }
     
     
@@ -63,6 +69,7 @@ public class nodo {
         this.y=n1.getY();
         this.conectado=n1.getConectado();
         this.F=n1.getF();
+        this.W = n1.getW();
     }
     
     public void set (int idDado){
@@ -108,6 +115,13 @@ public class nodo {
     
     public boolean getF (){
         return this.F;
+    }
+    
+    public void setW (double p){
+        this.W = p;
+    }
+    public double getW (){
+        return this.W; 
     }
     
 }

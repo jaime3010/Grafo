@@ -2,7 +2,9 @@ package grafo;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.PriorityQueue;
 import java.util.Stack;
 
 
@@ -10,14 +12,31 @@ public class Grafo {
     
     private HashMap<Integer,nodo> Nodos;
     private HashMap<Integer,Arista> Aristas;
+   
     
     public Grafo (HashMap<Integer,nodo> N, HashMap<Integer,Arista> A){
-        this.Nodos = (HashMap)N.clone();
-        this.Aristas= (HashMap)A.clone();
+        this.Nodos = new HashMap();
+        for (int i = 0; i < N.size(); i++) {
+            this.Nodos.put(i,new nodo(N.get(i)));
+        }
+        this.Aristas = new HashMap();
+        for (int i = 0; i < A.size(); i++) {
+            this.Aristas.put(i,new Arista(A.get(i)));
+        }
     }
     public Grafo (){
-        this.Nodos = new HashMap<>();
-        this.Aristas = new HashMap<>();
+        this.Nodos = new HashMap();
+        this.Aristas = new HashMap();
+    }
+    public Grafo (Grafo g){
+        this.Nodos = new HashMap();
+        for (int i = 0; i < g.getNodos().size(); i++) {
+            this.Nodos.put(i,new nodo(g.getNodos().get(i)));
+        }
+        this.Aristas = new HashMap();
+        for (int i = 0; i < g.getAristas().size(); i++) {
+            this.Aristas.put(i,new Arista(g.getAristas().get(i)));
+        }
     }
     
     public void setNodos (HashMap<Integer,nodo> a){
@@ -37,6 +56,31 @@ public class Grafo {
         this.Aristas = (HashMap)b;
     }
     
+    /**
+     * El metodo asigna valores random dentro de un rango asignado por los 
+     * argumentos de entrada al metodo, estos argumentos son el maximo y 
+     * minimo del rango
+     * 
+     * ljn,mnk
+     * @param min Asigna el limite minimo de los pesos aleatorios
+     * @param max Asigna el limite maximo de los pesos aleatorios
+     * @return Regresa un objeto tipo Grafo que es la copia del Grafo que lo invoco
+     * pero con pesos nuevos.
+     */
+    public Grafo EdgeValues(double min, double max){
+        int NumAristas = this.Aristas.size();
+        for (int i = 0; i < NumAristas; i++) {
+            this.Aristas.get(i).setP(Math.random()*(max-min)+min);
+        }
+        Grafo G = new Grafo(this.Nodos,this.Aristas);
+        return G;
+    }
+    
+    public static void modificador (Grafo G){
+        for (int i = 0; i < G.getNodos().size(); i++) {
+            G.getNodos().get(i).setF(true);
+        }
+    }
     
     public static Grafo Erdos (int NumNodos,int NumAristas,int f2){
         HashMap<Integer,nodo> NodoS = new HashMap();
@@ -49,12 +93,12 @@ public class Grafo {
         }
         
         int a1=(int)(Math.random()*NumNodos), a2=(int)(Math.random()*NumNodos);
-        AristaS.put(0, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get()));
+        AristaS.put(0, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get(), Math.random()));
         
         while(a1==a2 && f2==0){
             a1=(int)(Math.random()*NumNodos);
             a2=(int)(Math.random()*NumNodos);
-            AristaS.put(0, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get()));
+            AristaS.put(0, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get(),Math.random()));
         }
         
         NodoS.get(a1).conectar();
@@ -77,7 +121,7 @@ public class Grafo {
                     cont++;
                 }                
                 if(f1==1){
-                    AristaS.put(AristasHechas, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get()));
+                    AristaS.put(AristasHechas, new Arista(NodoS.get(a1).get(), NodoS.get(a2).get(),Math.random()));
                     NodoS.get(a1).conectar();
                     NodoS.get(a2).conectar();
                     if(a1!=a2){   NodoS.get(a1).IncGrado(1);    }
@@ -106,7 +150,6 @@ public class Grafo {
         return G;
         
     }    
-    
     public static Grafo Gilbert (int NumNodos,double prob,int f2){
         HashMap<Integer,nodo> NodoS = new HashMap();
         HashMap<Integer,Arista> AristaS = new HashMap();
@@ -134,7 +177,6 @@ public class Grafo {
         Grafo G = new Grafo(NodoS,AristaS);
         return G;
     }
-    
     public static Grafo Geografico (int NumNodos, double distancia, int f2){
         HashMap<Integer,nodo> NodoS = new HashMap();
         HashMap<Integer,Arista> AristaS = new HashMap();
@@ -165,7 +207,6 @@ public class Grafo {
         Grafo G = new Grafo(NodoS,AristaS);
         return G;
     }
-    
     public static Grafo Barabasi (int NumNodos, double GradoMax, int f2){
         HashMap<Integer,nodo> NodoS = new HashMap();
         HashMap<Integer,Arista> AristaS = new HashMap();
@@ -197,7 +238,6 @@ public class Grafo {
         Grafo G = new Grafo(NodoS,AristaS);
         return G;
     }
-    
     public static void imprimir (String nombre, Grafo g){
         FileWriter fichero = null;
         PrintWriter pw = null;
@@ -210,12 +250,11 @@ public class Grafo {
             pw = new PrintWriter(fichero);
             pw.println("graph 666{");
             for(int i=0;i<g.getNodos().size();i++){
-                pw.println(g.getNodos().get(i).get());
-                
+                pw.println(g.getNodos().get(i).get()+ "  " +"[Label = \""+g.getNodos().get(i).get()+" ("+String.format("%.2f", g.getNodos().get(i).getW())+")\"]");
             }
             pw.println();
             for(int i=0;i<g.getAristas().size();i++){
-                pw.println(g.getAristas().get(i).getidN1()+"--"+g.getAristas().get(i).getidN2());
+                pw.println(g.getAristas().get(i).getidN1()+"--"+g.getAristas().get(i).getidN2()+ "  " + "[Label = \"" + String.format("%.2f",g.getAristas().get(i).getP())+"\"]");
             }
             pw.println("}");          
             
@@ -230,9 +269,89 @@ public class Grafo {
            }
         }
     }
+    /**Dijkstra
+     * @param raiz nodo raiz 
+     * @return Regresa un Objeto Grafo que contiene el arbol generado.
+     */
+    public Grafo Dijkstra (nodo raiz){
+        for (int i = 0; i < this.Nodos.size(); i++) {
+            this.Nodos.get(i).setW(Double.POSITIVE_INFINITY);
+        }
+        double MA[][]=new double[this.Nodos.size()][this.Nodos.size()];//Matriz de adyacencia con pesos de arita
+        
+        //llena la matriz de adyacencia con infinitos
+        for (int i = 0; i < this.Nodos.size(); i++) {
+            for (int j = 0; j < this.Nodos.size(); j++) {
+                MA[i][j] = Double.POSITIVE_INFINITY;
+            }
+        }
+        //====System.out.println("");
+        //Coloca el peso de cada arista dentro de la entrada que le corresponde en la matriz de forma 
+        //simetrica con respecto a la diagonal para grafos no dirigidos.
+        for (int i = 0; i < this.Aristas.size(); i++) {
+            MA[this.Aristas.get(i).getidN1()][this.Aristas.get(i).getidN2()] = this.Aristas.get(i).getP();
+            MA[this.Aristas.get(i).getidN2()][this.Aristas.get(i).getidN1()] = this.Aristas.get(i).getP();
+        }
+        //====System.out.println("grafo.Grafo.Dijkstra()");
+        ArrayList<Integer> NodosEncontrados = new ArrayList<Integer>();//declaracion del conjunto de nodos encontrados
+        //declaracio del vector que almacena las aristas para el arbol resultante 
+        HashMap<Integer,Arista> AZ = new HashMap();
+        int numA = 0;
+        //Es colocado como primer elemento en el conjunto de nodos encontrados el nodo
+        //que entro como parametro al metodo para ser la raiz del arbol
+        NodosEncontrados.add(this.Nodos.get(raiz.get()).get());
+        this.Nodos.get(raiz.get()).setF(true);
+        this.Nodos.get(raiz.get()).setW(0);
+        //====System.out.println("grafo.Grafo.Dijkstra()");
+        //la variable aux guarda el valor del peso minio dentro de los nodos qe son encontrados
+        //desde los nods que s encuentran en el conjunto de nodos encontrados,
+        // las variables a y b guardan el nodo que econtro al nuevo nodo a agragar a la lista de 
+        //nodos encontrados 
+        double aux = 0;
+        int a=0,b=0;
+        boolean parar = true;
+        //====System.out.println("grafo.Grafo.Dijkstra()");
+        
+        while (aux != Double.POSITIVE_INFINITY) { 
+            aux = Double.POSITIVE_INFINITY;
+            //====System.out.println("================" + aux);
+            for (int i = 0; i < NodosEncontrados.size(); i++) {
+                //====System.out.println(NodosEncontrados.get(i));
+                for (int j = 0; j < this.Nodos.size(); j++) {
+                    //====System.out.print("");
+                    if (this.Nodos.get(j).getF() != true && MA[NodosEncontrados.get(i)][j] != Double.POSITIVE_INFINITY) {
+                        //====System.out.println("    "+j+" -> "+(this.Nodos.get(NodosEncontrados.get(i)).getW()+MA[NodosEncontrados.get(i)][j]));
+                        if ((this.Nodos.get(NodosEncontrados.get(i)).getW()+MA[NodosEncontrados.get(i)][j]) < aux) {
+                            this.Nodos.get(j).setW(this.Nodos.get(NodosEncontrados.get(i)).getW()+MA[NodosEncontrados.get(i)][j]);
+                            aux = this.Nodos.get(j).getW();
+                            a = NodosEncontrados.get(i);
+                            b = j;
+                            //====System.out.println("        " + aux + "   " + a+"-->"+b);
+                        }
+                    }
+                }
+            }
+            if (aux != Double.POSITIVE_INFINITY) {
+                this.Nodos.get(b).setF(true);
+                NodosEncontrados.add(b);
+                //====System.out.println("          " + aux + "   " + a +"-->"+ b);
+                AZ.put(numA,new Arista(a,b,MA[a][b]));
+                numA++; 
+            }
+            
+        }
+        
+        HashMap<Integer,nodo> NZ = new HashMap();
+        for (int i = 0; i < NodosEncontrados.size(); i++) {
+            NZ.put(i, new nodo(this.Nodos.get(NodosEncontrados.get(i))));
+        }
+        Grafo G1 = new Grafo(NZ,AZ);
+        return G1;
+        
+    }
     
-    
-    public static Grafo BFS (Grafo G, nodo nod){
+    public static Grafo BFS (Grafo G1, nodo nod){
+        Grafo G = new Grafo(G1.getNodos(), G1.getAristas());
         HashMap<Integer,HashMap> Ls = new HashMap(); //  Coleccion de colecciones
         HashMap<Integer,nodo> Ln1 = new HashMap();   //
         HashMap<Integer,nodo> Ln2 = new HashMap();   //
@@ -276,8 +395,8 @@ public class Grafo {
         A.setG(V, Edg);
         return A;
     }
-    
-    public static Grafo DFS_I (Grafo G, nodo nod){
+    public static Grafo DFS_I (Grafo G1, nodo nod){
+        Grafo G = new Grafo(G1.getNodos(), G1.getAristas());
         Grafo A = new Grafo();
         int z,cA=0;
         boolean fl;
@@ -313,7 +432,7 @@ public class Grafo {
             }
         }
         
-        for(int i=0;i<A.getAristas().size() ;i++){
+        /*for(int i=0;i<A.getAristas().size() ;i++){
             System.out.println(A.getAristas().get(i).getidN1()+"--"+A.getAristas().get(i).getidN2());
         }
         System.out.println("");
@@ -323,10 +442,9 @@ public class Grafo {
                                 A.getNodos().get(i).getGrado()
                                 +" === "+A.getNodos().get(i).getX()+" "+A.getNodos().get(i).getY());
         }
-        System.out.println("");
+        System.out.println("");*/
         return A;
     }
-    
     public static Grafo DFS_R (Grafo G,nodo N0){
         Grafo A = new Grafo();
         Grafo B;
@@ -357,57 +475,151 @@ public class Grafo {
     }
     
     
-    
     public static void main(String[] args) {
         
+      
+        HashMap<Integer,nodo> NodoS = new HashMap();
+        NodoS.put(0,new nodo(0, 1, 3,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(1,new nodo(1, 1, 2,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(2,new nodo(2, 1, 5,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(3,new nodo(3, 1, 3,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(4,new nodo(4, 1, 5,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(5,new nodo(5, 1, 4,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(6,new nodo(6, 1, 4,0.0,0.0,false, Double.POSITIVE_INFINITY));
+        NodoS.put(7,new nodo(7, 1, 4,0.0,0.0,false, Double.POSITIVE_INFINITY));        
+        HashMap<Integer,Arista> AristaS = new HashMap();     
+        AristaS.put(0,new Arista(0,1,9));
+        AristaS.put(1,new Arista(0,5,14));
+        AristaS.put(2,new Arista(0,6,15));
+        AristaS.put(3,new Arista(1,2,24));
+        AristaS.put(4,new Arista(2,5,18));
+        AristaS.put(5,new Arista(2,4,2));
+        AristaS.put(6,new Arista(2,3,6));
+        AristaS.put(7,new Arista(2,7,19));
+        AristaS.put(8,new Arista(3,4,11));
+        AristaS.put(9,new Arista(3,7,6));
+        AristaS.put(10,new Arista(4,5,30));
+        AristaS.put(11,new Arista(4,6,20));
+        AristaS.put(12,new Arista(4,7,16));
+        AristaS.put(13,new Arista(5,6,5));
+        AristaS.put(14,new Arista(6,7,44));
+        Grafo G = new Grafo(NodoS,AristaS);
         
+        
+        //================================            Funcionamiento de Dijkstra
+        Grafo G3 = new Grafo();
+        //G3 = Geografico(500,.5,0);
+        //G3 = Erdos(400,1250,0);
+        //G3 = Gilbert(500,.1,0);
+        G3=Barabasi(500, 20, 0);
+        G3.EdgeValues(0, 10);
+        imprimir("Barabasi 30", G3);
+        Grafo G2 = new Grafo(G3.Dijkstra(G3.getNodos().get(0)));
+        imprimir("Barabasi 30 Dijkstra", G2);
+        //======================================================================
+        /*System.out.println("===   Z   ===");
+        for(int i=0;i<G3.getAristas().size() ;i++){
+            System.out.println(G3.getAristas().get(i).getidN1()+"--"+G3.getAristas().get(i).getidN2()+"   "+G3.getAristas().get(i).getP());
+        }
+        System.out.println("");
+        for(int i=0; i<G3.getNodos().size();i++){
+            System.out.println(G3.getNodos().get(i).get()+" "+
+                                G3.getNodos().get(i).getConectado()+" "+
+                                G3.getNodos().get(i).getGrado()
+                                +" === "+G3.getNodos().get(i).getX()+" "+G3.getNodos().get(i).getY());
+        }
+        System.out.println("");
+        for(int i=0; i<G3.getNodos().size();i++){
+            if(G3.getNodos().get(i).getConectado() == 0){
+                System.out.println(G3.getNodos().get(i).get());
+            }
+        }*/
+        
+      
+       
+        /*//Almacena las aristas del arbol original  las acomodo colocando al tope
+        //la arista con el peso minimo.
+        PriorityQueue<Arista> pqAristas = new PriorityQueue<>();
+        for (int i = 0; i < G.getAristas().size(); i++) {
+            pqAristas.add(G.getAristas().get(i));
+        }
+        
+        HashMap<Integer,Arista> AristaMinExp = new HashMap();
+        ArrayList<Integer> NodosEncontrados = new ArrayList<Integer>();
+        int numAri = 0;
+        
+        for (int i = 0; i < G.Aristas.size(); i++) {
+            if (NodosEncontrados.contains(pqAristas.peek().getidN1()) == false) {
+                NodosEncontrados.add(pqAristas.peek().getidN1());
+            }
+            if (NodosEncontrados.contains(pqAristas.peek().getidN2()) == false) {
+                NodosEncontrados.add(pqAristas.peek().getidN2());
+            }
+            AristaMinExp.put(numAri, new Arista(pqAristas.poll()));
+            System.out.println("grafo.Grafo.main()");
+            if (NodosEncontrados.size() <= AristaMinExp.size() ) {
+                AristaMinExp.remove(numAri);
+                numAri--;
+                System.out.println("grafo.Grafo.main()");
+            }
+            /*if (true) {
+                Grafo Gaux = new Grafo(G.getNodos(),AristaMinExp);
+                Grafo arbol = new Grafo();
+                arbol = DFS_I(Gaux, Gaux.getNodos().get(AristaMinExp.get(numAri).getidN2()));
+                if (AristaMinExp.size()-((AristaMinExp.size()-1)-arbol.getAristas().size()) == 1) {
+                    AristaMinExp.remove(numAri);
+                    numAri--;
+                }
+            }
+            numAri++;            
+        }//*/
+        
+        
+        
+        
+        //Grafo G = new Grafo();
+        //G=Erdos(30,270,0);
+        //G=Erdos(100,2000,0);
+        //G=Erdos(500,7000,0);
+        
+        //G=Gilbert(30,.5,0);
+        //G=Gilbert(100,.25,0);
+        //G=Gilbert(500,.1,0);
+        
+        //G=Geografico(30,.5,0);
+        //G=Geografico(110,.2,0);
+        //G=Geografico(10000,.3,0);
+        
+        //G=Barabasi(30, 5, 0);
+        //G=Barabasi(100, 4, 0);
+        //G=Barabasi(500, 20, 0);
+        
+        //imprimir("prueba", G);
+        
+        //Grafo G1 = new Grafo();
+        //Grafo G2 = new Grafo();
+        //====================================BFS  
+        //Grafo G = new Grafo();
+        //G = Geografico(500,.5,0);
+        //imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        //G1 = BFS(G,G.getNodos().get(0));
+        //imprimir(G1.getNodos().size()+"N "+G1.getAristas().size()+"A BSF", G1);
+        //==================================================================
         //====================================DFS_I
-        /*Grafo G = new Grafo();
-        G = Geografico(30,.5,0);
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
-        G = DFS_I(G,G.getNodos().get(0));
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A DFS_I", G);//*/
+        //Grafo G = new Grafo();
+        //G = Geografico(30,.5,0);
+        //imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        //G2 = DFS_I(G,G.getNodos().get(0));
+        //imprimir("Geografico "+G2.getNodos().size()+"N "+G2.getAristas().size()+"A DFS_I", G2);
         //=================================================================
-        
         //====================================DFS_R
-        /*Grafo G = new Grafo();
-        G = Geografico(30,.5,0);
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
-        G = DFS_R(G,G.getNodos().get(0));
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A DFS_R", G);//*/
+        //Grafo G = new Grafo();
+        //G = Geografico(30,.5,0);
+        //imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
+        //G = DFS_R(G,G.getNodos().get(0));
+        //imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A DFS_R", G);
         //==================================================================
         
-        //====================================BFS  Funciona chingon 
-        /*Grafo G = new Grafo();
-        G = Geografico(500,.5,0);
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A", G);
-        G = BFS(G,G.getNodos().get(0));
-        imprimir("Geografico "+G.getNodos().size()+"N "+G.getAristas().size()+"A BSF", G);//*/
-        //==================================================================
-        
-        
-        
-        
-     
-        
-        
-        //G1=Erdos(10,10,0);       
-        //imprimir("Erdos_10_20", G1);
-        //Erdos("Erdos_30_270",30,270,0);
-        //Erdos("Erdos_100_2000",100,2000,0);
-        //Erdos("Erdos_500_75000",500,7000,0);
-        
-        //Gilbert("Gilbert_30_.5",30,.5,0);
-        //Gilbert("Gilbert_100_.25",100,.25,0);
-        //Gilbert("Gilbert_500_.1",500,.1,0);
-        
-        //Geografico("geografico_30_.5",30,.5,0);
-        //Geografico("geografico_100_.2",110,.2,0);
-        //Geografico("geografico_500_.05",500,.2,0);
-        
-        //Barabasi("Barabasi_30_5", 30, 5, 0);
-        //Barabasi("Barabasi_100_4", 100, 4, 0);
-        //Barabasi("Barabasi_500_20", 500, 20, 0);
         
         
         /*for(int i=0;i<G1.getAristas().size() ;i++){
@@ -427,8 +639,5 @@ public class Grafo {
             }
         }*/
         
-               
-        
     }
-    
 }
